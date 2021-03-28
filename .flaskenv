@@ -1,0 +1,2 @@
+FLASK_APP=fitness_club.py
+FLASK_ENV=development

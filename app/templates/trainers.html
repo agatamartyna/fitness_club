@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pracownicy</title>
+    <style>
+        table, th, tr, td {border: 1px solid black;}
+    </style>
+</head>
+<body>
+<div>
+    <table>
+        <thead>
+            <tr>
+                <td>Id</td>
+                <td>Imię</td>
+                <td>Trener personalny</td>
+                <td>Zajęcia</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trainer in trainers %}
+        <tr>
+            <td>{{ trainer.id }}</td>
+            <td><a href="/trainers/{{ trainer.id }}">{{ trainer.name }}</a></td>
+            <td>{% if trainer.personal==True %} Tak {% else %} Nie {% endif %}</td>
+            <td>{% for class in trainer.classes %} {{ class.name }}, {% endfor %}</td>
+            <td>
+                <form action="/delete-trainer/{{ trainer.id }}" method="POST">
+                    <input type="submit" value="Usuń">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div>
+    <h1>Nowy pracownik</h1>
+    <form action="/trainers" method="POST">
+        <table>
+            <thead>
+                <tr>
+                    <td>Imię</td>
+                    <td>Trener personalny</td>
+                    <td>Zajęcia</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ form.name }}</td>
+                    <td>{{ form.personal }}</td>
+                    <td>{{ form.classes }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <input type="submit" value="Dodaj">
+    </form>
+</div>
+
+</body>
+</html>

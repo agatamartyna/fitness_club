@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dane Pracownika</title>
+    <style>
+        table, th, tr, td {border: 1px solid black;}
+    </style>
+</head>
+<body>
+    <div>
+        <form action="/trainers/{{ trainer.id }}" method="POST">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Imię</td>
+                        <td>Trener personalny</td>
+                        <td>Zajęcia</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ form.name }}</td>
+                        <td>{{ form.personal }}</td>
+                        <td>{{ form.classes }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            <input type="submit" value="Zmień">
+        </form>
+        <br>
+        <form action="/delete-trainer/{{ trainer.id }}" method="POST">
+            <input type="submit" value="Usuń pracownika">
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uczestnicy</title>
+    <style>
+        table, th, tr, td {border: 1px solid black;}
+    </style>
+</head>
+<body>
+<h1>Uczestnicy</h1>
+<table>
+    <thead>
+        <tr>
+            <td>id</td>
+            <td>Uczestnik</td>
+            <td>Zapisany(a)</td>
+            <td>Aktywny(a)</td>
+            <td>Zajęcia</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td><a href="/users/{{ user.id }}">{{ user.name }}</a></td>
+        <td>{{ user.sign_up }}</td>
+        <td>{{ user.active }}</td>
+        <td>{% for course in user.courses %}{{ course.name }}, {% endfor %}</td>
+        <td>
+            <form action="/delete-user/{{ user.id }}" method="POST">
+                <input type="submit" value="Usuń">
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div>
+    <h2>Nowy Uczestnik</h2>
+    {% if error %}<p>{{ error }}</p>{% endif %}
+    <form method="POST" action="/users">
+        <table>
+            <thead>
+            <tr>
+                <td>Imię</td>
+                <td>Status</td>
+                <td>Trener personalny</td>
+                <td>Abonament</td>
+                <td>Zajęcia</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ form.name }}</td>
+                <td>{{ form.active }}</td>
+                <td>{{ form.trainer }}</td>
+                <td>{{ form.subscription }}</td>
+                <td>{{ form.courses }}</td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+        <input type="submit" value="Dodaj">
+    </form>
+</div>
+
+</body>
+</html>

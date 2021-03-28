@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Abonamenty</title>
+    <style>
+        table, th, tr, td {border: 1px solid black;}
+    </style>
+</head>
+<body>
+<h1>Abonamenty</h1>
+<table>
+    <thead>
+    <tr>
+        <td>Id</td>
+        <td>Nazwa</td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for subscription in subscriptions %}
+    <tr>
+        <td>{{ subscription.id }}</td>
+        <td>{{ subscription.name }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div>
+    <h1>Nowy abonament</h1>
+    <form action="/subscriptions" method="POST">
+        <table>
+            <thead>
+                <tr>
+                    <td>Nazwa</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ form.name }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <input type="submit" value="Dodaj">
+    </form>
+</div>
+</body>
+</html>

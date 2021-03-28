@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zajęcia</title>
+    <style>
+        table, th, tr, td {border: 1px solid black;}
+    </style>
+</head>
+<body>
+<h1>Zajęcia</h1>
+<table>
+    <thead>
+    <tr>
+        <td>Id</td>
+        <td>Nazwa</td>
+        <td>Instruktor</td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for course in courses %}
+    <tr>
+        <td>{{ course.id }}</td>
+        <td>{{ course.name }}</td>
+        <td>{% for instructor in course.instructors %} {{ instructor.name }}, {% endfor %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<h1>Nowy kurs</h1>
+<form action="/courses" method="POST">
+    <table>
+        <thead>
+            <tr>
+                <td>Nazwa</td>
+                <td>Instruktor</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ form.name }}</td>
+                <td>{{ form.instructors }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <input type="submit" value="Dodaj">
+</form>
+</body>
+</html>
