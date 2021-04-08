@@ -166,7 +166,11 @@ def trainer_details(trainer_id):
             t = Trainer(name=name, personal=personal, classes=classes)
             db.session.add(t)
             db.session.commit()
-            return redirect(url_for("trainers_all", num=trainers_num))
+            trainers = Trainer.query.all()
+            t_index = trainers.index(t)
+            num = (len(trainers[:t_index])) // 4
+            db.session.commit()
+            return redirect(url_for("trainers_all", num=num))
 
         return render_template("trainer.html", form=form, new_id=new_id, num=0, navs=navs, route=route)
     else:
@@ -186,6 +190,8 @@ def trainer_details(trainer_id):
             trainer_index = trainers.index(trainer)
             num = (len(trainers[:trainer_index])) // 4
             db.session.commit()
+
+
 
             return redirect(url_for("trainers_all", num=num))
 
