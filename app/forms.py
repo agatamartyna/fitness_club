@@ -37,7 +37,7 @@ class TrainerForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(TrainerForm, self).__init__(*args, **kwargs)
-        self.classes.choices = [(course.name, course.name) for course in Course.query.all()]
+        self.classes.choices = [('', '')] + [(course.name, course.name) for course in Course.query.all()]
 
 class SubscriptionForm(FlaskForm):
     name = StringField("name", validators=[DataRequired()])

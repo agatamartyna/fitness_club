@@ -1,38 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Dane Pracownika</title>
-    <style>
-        table, th, tr, td {border: 1px solid black;}
-    </style>
-</head>
-<body>
-    <div>
-        <form action="/trainers/{{ trainer.id }}" method="POST">
-            <table>
-                <thead>
-                    <tr>
-                        <td>Imię</td>
-                        <td>Trener personalny</td>
-                        <td>Zajęcia</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ form.name }}</td>
-                        <td>{{ form.personal }}</td>
-                        <td>{{ form.classes }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <br>
-            <input type="submit" value="Zmień">
-        </form>
-        <br>
-        <form action="/delete-trainer/{{ trainer.id }}" method="POST">
-            <input type="submit" value="Usuń pracownika">
-        </form>
+{% extends "index.html" %}
+
+{% block content %}
+<div class="jumbotron" style="background-image: url('/static/pics/gra_11.jpg'); background-size: cover; background-position: center;">
+    <div class="container">
+      <h1 style="font-weight: bold;">{% if trainer %} Trener: {{ trainer.name }} {% else %} Nowy trener {% endif %}</h1>
+        <p>{% if trainer %} Edytuj dane trenera. Możesz usunąć dane bez wpisywania nowych. {% else %} Dodaj nowego trenera. Jedynie imię jest polem obowiązkowym - pozostałe pola mogą poczekać. {% endif%}</p>
     </div>
-</body>
-</html>
+</div>
+
+<div class="container" style="background-color:">
+    <div class="container" style="padding: 20px;">
+        <h3 style="">Dane trenera</h3>
+    </div>
+    <form action="/add-edit-trainer/{{ new_id }}" method="POST">
+        <div class="table-section" style="margin-left: 20px; margin-right: 20px;">
+         <div class="row">
+             <div class="col-sm-3" style="padding: 0px;">
+                 <table class="table table-striped  table-bordered table-light" style="padding: 0px; background-color: #ace6e0;">
+                     <tr>
+                         <td><h5>Imię</h5></td>
+                     </tr>
+                     <tr>
+                         <td><h5>Trener personalny</h5></td>
+                     </tr>
+                     <tr>
+                         <td><h5>Trenowani uczestnicy</h5></td>
+                     </tr>
+                     <tr>
+                         <td style="height: 8rem;"><h5>Prowadzone zajęcia</h5></td>
+                     </tr>
+                 </table>
+             </div>
+             <div class="col-sm-3" style="padding: 0px;">
+                 <table class="table table-striped table-bordered table-light" style="padding: 0px; background-color: #d6f5f5">
+                     <tr>
+                         <td>{{ form.name }}</td>
+                     </tr>
+                     <tr>
+                         <td>{{ form.personal }}</td>
+                     </tr>
+                     <tr>
+                         {% if trainer %}
+                         <td><button type="button" class="btn btn-info" data-toggle="popover" data-trigger="hover"
+                            data-placement="right" title="Uczestnicy pod opieką trenera"
+                            data-content="{% for trainee in trainer.trainees %} {{ trainee.name }}, {% endfor %}">Lista uczestników</button></td></td>
+                         {% else %}
+                         <td></td>
+                         {% endif %}
+                     </tr>
+                     <tr>
+                         <td style="height: 8rem;">{{ form. classes }}</td>
+                     </tr>
+                 </table>
+             </div>
+         </div>
+            {% if trainer %}
+        <input type="submit" class="btn btn-primary" value="Zmień dane">
+            {% else %}
+            <input type="submit" class="btn btn-primary" value="Dodaj">
+            {% endif %}
+    </div>
+
+    </form>
+
+</div>
+{% endblock %}
+

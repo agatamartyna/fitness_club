@@ -2,10 +2,33 @@ from flask import render_template, request, redirect, url_for
 from app.models import User, Subscription, Trainer, Course
 from app import app, db
 from app.forms import UserForm, CourseForm, TrainerForm, SubscriptionForm
+from datetime import datetime
+import math
+from helpers import navs
 
-@app.route('/users', methods=["GET", "POST"])
-def users_all():
-    users = User.query.all()
+
+
+@app.route('/', methods=["GET"])
+def index():
+    route = "/"
+    data = [("Uczestnicy", "Zarządzaj listą uczestników - dodawaj nowych abonentów, edytuj lub usuwaj dane.",
+             "static/pics/gra_6.jpg", "/users/0", ),
+            ("Trenerzy", 'Tu wprowadzisz nowego pracownika a także edytujesz i usuniesz już istniejących.',
+             "static/pics/gra_11.jpg", "/trainers/0"),
+            ("Zajęcia", 'Przejdż do listy zajęć. Dodaj nowe zajęcia lub usuń te, które nie są już aktualne.',
+             "static/pics/tra_back.jpg", "/courses/0"),
+            ("Abonamenty", 'Sprawdź typy abonamentów oferowanych przez klub i w razie potrzeby stwórz nowe.',
+             "static/pics/ba_sub.jpg", "/subscriptions/0")]
+
+    return render_template("home.html", data=data, navs=navs, route=route)
+
+
+@app.route('/users/<int:num>', methods=["GET", "POST"])
+def users_all(num):
+    route = "/users/0"
+    users = User.query.all()[num*4:num*4+4]
+    users_num = math.ceil((len(User.query.all()))/4)
+    new_id = max([user.id for user in User.query.all()]) + 1
     trainers = Trainer.query.all()
     subscriptions = Subscription.query.all()
     form = UserForm()
@@ -26,45 +49,168 @@ def users_all():
         db.session.add(user)
         db.session.commit()
 
-        return redirect(url_for("users_all"))
+        return redirect(url_for("users_all", num=num))
 
-    return render_template("users.html", users=users, trainers=trainers, subscriptions=subscriptions, error=error, form=form)
+    return render_template("members.html", num=num, users=users, trainers=trainers, subscriptions=subscriptions,
+                           error=error, form=form, users_num=users_num, new_id=new_id, route=route, navs=navs)
 
 
-@app.route('/users/<int:user_id>', methods=["POST", "GET"])
+@app.route('/add-edit-user/<int:user_id>', methods=["POST", "GET"])
 def user_details(user_id):
-    user = User.query.filter_by(id=user_id).first_or_404()
-    data = {'name':user.name, 'active':user.active,
-            'subscription':user.holder.name,
-            'trainer':user.trainee.name,
-            'courses':[course.name for course in user.courses]}
-    form = UserForm(data=data)
-    if request.method == "POST":
-        user.name = form.data["name"]
-        user.active = form.data["active"]
-        user.holder = Subscription.query.filter_by(name=form.data["subscription"])[0]
-        user.trainee = Trainer.query.filter_by(name=form.data["trainer"])[0]
-        user.courses = []
-        for course in form.data["courses"]:
-            c = Course.query.filter_by(name=course)[0]
-            user.courses.append(c)
-        db.session.commit()
+    route = "/users/0"
+    new_id = user_id
+    users_num = math.ceil((len(User.query.all())) / 4)
+    time = datetime.utcnow()
+    if user_id == max([user.id for user in User.query.all()]) + 1:
+        form = UserForm()
+        if request.method == "POST":
+            name = form.data["name"]
+            active = form.data["active"]
+            if form.data["subscription"] != '':
+                holder = Subscription.query.filter_by(name=form.data["subscription"])[0]
+            else:
+                holder = None
+            if form.data["trainer"] != '':
+                trainee = Trainer.query.filter_by(name=form.data["trainer"])[0]
+            else:
+                trainee = None
+            courses = []
+            for course in form.data["courses"]:
+                c = Course.query.filter_by(name=course)[0]
+                courses.append(c)
+            u = User(name=name, active=active, holder=holder, trainee=trainee, courses=courses)
+            db.session.add(u)
+            db.session.commit()
+            return redirect(url_for("users_all", num=users_num))
 
-        return redirect(url_for("users_all"))
+        return render_template("member.html", form=form, new_id=new_id, time=time, route=route, navs=navs)
+    else:
+        user = User.query.filter_by(id=user_id).first()
+        data = {}
+        if (user.holder is not None) and (user.trainee is not None):
+            data = {'name': user.name, 'active': user.active, "subscription": user.holder.name, "trainer": user.trainee.name,
+                    'courses': [course.name for course in user.courses]}
+        elif (user.holder is not None) and (user.trainee is None):
+            data = {'name': user.name, 'active': user.active, "subscription": user.holder.name,
+                    "trainer": "",
+                    'courses': [course.name for course in user.courses]}
+        elif (user.holder is None) and (user.trainee is not None):
+            data = {'name': user.name, 'active': user.active, "subscription": "",
+                    "trainer": user.trainee,
+                    'courses': [course.name for course in user.courses]}
+        elif (user.holder is None) and (user.trainee is None):
+            data = {'name': user.name, 'active': user.active, "subscription": "",
+                    "trainer": "",
+                    'courses': [course.name for course in user.courses]}
+        form = UserForm(data=data)
+        if request.method == "POST":
+            user.name = form.data["name"]
+            user.active = form.data["active"]
+            if form.data["subscription"] != "":
+                user.holder = Subscription.query.filter_by(name=form.data["subscription"])[0]
+            else:
+                user.holder = None
+            if form.data["trainer"] != "":
+                user.trainee = Trainer.query.filter_by(name=form.data["trainer"])[0]
+            else:
+                user.trainee = None
+            courses = []
+            for course in form.data["courses"]:
+                c = Course.query.filter_by(name=course)[0]
+                courses.append(c)
+            db.session.commit()
+            users = User.query.all()
+            user_index = users.index(user)
+            num = (len(User.query.all()[:user_index])) // 4
+            return redirect(url_for("users_all", num=num))
 
-    return render_template("user.html", user=user, form=form)
+        return render_template("member.html", user=user, form=form, new_id=new_id, navs=navs, route=route)
+
 
 @app.route('/delete-user/<int:user_id>', methods=["POST"])
 def delete_user(user_id):
     user = User.query.filter_by(id=user_id).first_or_404()
     db.session.delete(user)
     db.session.commit()
-    return redirect(url_for("users_all"))
+
+    return redirect(url_for("users_all", num=0))
 
 
-@app.route('/courses', methods=["GET", "POST"])
-def courses_all():
-    courses = Course.query.all()
+
+@app.route('/trainers/<int:num>', methods=["GET", "POST"])
+def trainers_all(num):
+    route = "/trainers/0"
+    trainers = Trainer.query.all()[num * 4:num * 4 + 4]
+    form = TrainerForm()
+    trainers_num = math.ceil((len(Trainer.query.all())) / 4)
+    new_id = max([trainer.id for trainer in Trainer.query.all()]) + 1
+
+    return render_template("trainers.html", trainers=trainers, form=form, trainers_num=trainers_num, num=num, new_id=new_id, route=route, navs=navs)
+
+
+@app.route('/add-edit-trainer/<int:trainer_id>', methods=["POST", "GET"])
+def trainer_details(trainer_id):
+    route = "/trainers/0"
+    new_id = trainer_id
+    trainers_num = math.ceil((len(Trainer.query.all())) / 4)
+    if new_id == max([trainer.id for trainer in Trainer.query.all()]) + 1:
+        form = TrainerForm()
+        if request.method == "POST":
+            name = form.data["name"]
+            personal = form.data["personal"]
+            classes = []
+            if form.data["classes"] != ['']:
+                for c in form.data["classes"]:
+                    c = Course.query.filter_by(name=c)[0]
+                    classes.append(c)
+            t = Trainer(name=name, personal=personal, classes=classes)
+            db.session.add(t)
+            db.session.commit()
+            return redirect(url_for("trainers_all", num=trainers_num))
+
+        return render_template("trainer.html", form=form, new_id=new_id, num=0, navs=navs, route=route)
+    else:
+        trainer = Trainer.query.filter_by(id=trainer_id).first()
+        data = {'name': trainer.name, 'personal': trainer.personal,
+                'classes': [c.name for c in trainer.classes]}
+        form = TrainerForm(data=data)
+        if request.method == "POST":
+            trainer.name = form.data["name"]
+            trainer.personal = form.data["personal"]
+            trainer.classes = []
+            if form.data["classes"] != ['']:
+                for c in form.data["classes"]:
+                    c = Course.query.filter_by(name=c)[0]
+                    trainer.classes.append(c)
+            trainers = Trainer.query.all()
+            trainer_index = trainers.index(trainer)
+            num = (len(trainers[:trainer_index])) // 4
+            db.session.commit()
+
+            return redirect(url_for("trainers_all", num=num))
+
+        return render_template("trainer.html", trainer=trainer, form=form, new_id=new_id, route=route, navs=navs)
+
+
+@app.route('/delete-trainer/<int:trainer_id>', methods=["POST"])
+def delete_trainer(trainer_id):
+    trainer = Trainer.query.filter_by(id=trainer_id).first_or_404()
+    if trainer.trainees:
+        users = User.query.filter_by(trainee=trainer)
+        for user in users:
+            user.trainee = None
+    db.session.delete(trainer)
+    db.session.commit()
+    return redirect(url_for("trainers_all", num=0))
+
+
+
+@app.route('/courses/<int:num>', methods=["GET", "POST"])
+def courses_all(num):
+    route = "/courses/0"
+    courses = Course.query.all()[num * 7:num * 7 + 7]
+    courses_num = math.ceil((len(Course.query.all())) / 7)
+    new_id = max([course.id for course in Course.query.all()]) + 1
     form = CourseForm()
     if request.method == "POST":
         name = form.data["name"]
@@ -77,62 +223,23 @@ def courses_all():
         db.session.add(course)
         db.session.commit()
 
-        return redirect(url_for("courses_all"))
+        return redirect(url_for("courses_all", num=0, route=route, navs=navs))
 
-    return render_template('courses.html', courses=courses, form=form)
+    return render_template('courses.html', courses=courses, form=form, num=num, courses_num=courses_num, new_id=new_id, route=route, navs=navs)
 
-
-@app.route('/trainers', methods=["GET", "POST"])
-def trainers_all():
-    trainers = Trainer.query.all()
-    form = TrainerForm()
-
-    if request.method == "POST":
-        name = form.data["name"]
-        personal = form.data["personal"]
-        classes = form.data["classes"]
-        trainer = Trainer(name=name, personal=personal)
-        db.session.add(trainer)
-        for c in classes:
-            for course in Course.query.all():
-                if c == course.name:
-                    trainer.classes.append(course)
-        db.session.commit()
-
-        return redirect(url_for("trainers_all"))
-
-    return render_template("trainers.html", trainers=trainers, form=form)
-
-@app.route('/trainers/<int:trainer_id>', methods=["GET", "POST"])
-def trainer_details(trainer_id):
-    trainer = Trainer.query.filter_by(id=trainer_id).first_or_404()
-    data = {"name": trainer.name, "personal": trainer.personal, "classes": [course.name for course in trainer.classes]}
-    form = TrainerForm(data=data)
-    if request.method == "POST":
-        trainer.name = form.data["name"]
-        trainer.personal = form.data["personal"]
-        trainer.classes = []
-        for course in form.data["classes"]:
-            c = Course.query.filter_by(name=course)[0]
-            trainer.classes.append(c)
-        db.session.commit()
-
-        return redirect(url_for("trainers_all"))
-
-    return render_template("trainer.html", trainer=trainer, form=form)
-
-
-@app.route('/delete-trainer/<int:trainer_id>', methods=["POST"])
-def delete_trainer(trainer_id):
-    trainer = Trainer.query.filter_by(id=trainer_id).first_or_404()
-    db.session.delete(trainer)
+@app.route('/delete-course/<int:course_id>', methods=["POST"])
+def delete_course(course_id):
+    course = Course.query.filter_by(id=course_id).first_or_404()
+    db.session.delete(course)
     db.session.commit()
-    return redirect(url_for("trainers_all"))
+    return redirect(url_for("courses_all", num=0))
 
 
-@app.route('/subscriptions', methods=["GET", "POST"])
-def subscriptions_all():
-    subscriptions = Subscription.query.all()
+@app.route('/subscriptions/<int:num>', methods=["GET", "POST"])
+def subscriptions_all(num):
+    route = "/subscriptions/0"
+    subscriptions = Subscription.query.all()[num * 7:num * 7 + 7]
+    subs_num = math.ceil((len(Subscription.query.all())) / 7)
     form = SubscriptionForm()
     if request.method == "POST":
         name = form.data["name"]
@@ -140,12 +247,50 @@ def subscriptions_all():
         db.session.add(sub)
         db.session.commit()
 
-        return redirect(url_for("subscriptions_all"))
+        return redirect(url_for("subscriptions_all", num=0))
 
-    return render_template("subscriptions.html", subscriptions=subscriptions, form=form)
+    return render_template("subscriptions.html", subscriptions=subscriptions, form=form, num=num, subs_num=subs_num, navs=navs, route=route)
 
+@app.route('/delete-subscription/<int:sub_id>', methods=["POST"])
+def delete_subscription(sub_id):
+    sub = Subscription.query.filter_by(id=sub_id).first_or_404()
+    db.session.delete(sub)
+    db.session.commit()
+    return redirect(url_for("subscriptions_all", num=0))
 
+"""
+ else:
+            data = {'name': user.name, 'active': user.active, "subscription": None, "trainer": None,
+                    'courses': [course.name for course in user.courses]}
+            if user.holder:
+                data["subscription"] = user.holder.name
+            if user.trainee:
+                data["trainer"] = user.trainee.name
+            form = UserForm(data=data)
+        if request.method == "POST":
+            user.name = form.data["name"]
+            user.active = form.data["active"]
+            if user.holder:
+                if form.data["subscription"] != '':
+                    user.holder = Subscription.query.filter_by(name=form.data["subscription"])[0]
+                else:
+                    user.holder = None
+            else:
+                user.holder = None
+            if user.trainee:
+                if form.data["trainer"] != '':
+                    user.trainee = Trainer.query.filter_by(name=form.data["trainer"])[0]
+                else:
+                    user.trainee = None
+            else:
+                user.trainee = None
+            user.courses = []
+            if form.data["courses"] != ['']:
+                for course in form.data["courses"]:
+                    c = Course.query.filter_by(name=course)[0]
+                    user.courses.append(c)
+            db.session.commit()
 
-
-
+            return redirect(url_for("users_all", num=0))
+"""
 

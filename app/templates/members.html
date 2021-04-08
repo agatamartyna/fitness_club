@@ -1,0 +1,90 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="jumbotron" style="background-image: url('/static/pics/gra_6.jpg'); background-size: cover; background-position: center;">
+    <div class="container">
+      <h1 style="font-weight: bold;">Uczestnicy</h1>
+        <p>Przeglądaj listę członków klubu. Jeśli potrzebujesz więcej szczegółowych informacji lub chcesz
+            edytować uczestnika kliknij na imię. Jeśli chcesz wprowadzić dane nowego uczestnika kliknij przycisk poniżej.</p>
+        <a href="/add-edit-user/{{ new_id }}"><button class="btn btn-primary">Nowy uczestnik</button></a>
+      <p></p>
+    </div>
+</div>
+
+<div class="container" style="background-color:">
+    <div class="container" style="padding: 20px;">
+        <h3 style="">Lista uczestników</h3>
+    </div>
+    <div class="table-section" style="padding: 20px;">
+       <table class="table table-striped table-hover table-bordered table-light" style="background-color: #ffe6e6">
+           <thead>
+            <tr style="background-color: #fcccc7">
+                <td><h5>id</h5></td>
+                <td><h5>Uczestnik</h5></td>
+                <td><h5>Zapisany/a</h5></td>
+                <td><h5>Trener</h5></td>
+                <td><h5>Abonament</h5></td>
+                <td><h5>Status</h5></td>
+                <td><h5>Zajęcia</h5></td>
+                <td></td>
+            </tr>
+           </thead>
+           <tbody>
+           {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td><a href="/add-edit-user/{{ user.id }}">{{ user.name }}</a></td>
+                <td>{{ user.sign_up.strftime("%x") }}</td>
+                <td>{% if user.trainee %} {{ user.trainee.name }} {% else %} nie wybrano {% endif %}</td>
+                <td>{% if user.holder %} {{ user.holder.name }} {% else %} nie wybrano {% endif %}</td>
+                <td>{% if user.active==True %} Aktywny {% elif user.active==False %} Nieaktywny {% endif %}</td>
+                <td>{% if user.courses %}{% for course in user.courses %}{{ course.name }}, {% endfor %} {% else %} nie wybrano {% endif %}</td>
+                <td>
+                    <form action="/delete-user/{{ user.id }}" method="POST">
+                        <input type="submit" class="btn btn-danger" value="Usuń">
+                    </form>
+                </td>
+            </tr>
+           {% endfor %}
+           </tbody>
+       </table>
+    </div>
+</div>
+
+<div class="container">
+
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    {% if num==0 %}
+                    <a href="/users/{{ num }}" aria-label="Previous" class="page-link">
+                        {% else %}
+                        <a href="/users/{{ num-1 }}" aria-label="Previous" class="page-link">
+                            {% endif %}
+                        <span aria-hidden="true">&laquo;</span>
+                        </a>
+                </li>
+
+                {% for i in range(users_num) %}
+                {% if i==num %}
+                    <li class="page-item active"><a href="/users/{{ i }}" class="page-link">{{ i+1 }}</a></li>
+                {% else %}
+                    <li class="page-item"><a href="/users/{{ i }}" class="page-link">{{ i+1 }}</a></li>
+                {% endif %}
+                {% endfor %}
+                <li>
+                    {% if num!=users_num-1 %}
+                    <a href="/users/{{ num+1 }}" aria-label="Next" class="page-link">
+                        {% else %}
+                        <a href="/users/{{ num }}" aria-label="Next" class="page-link">
+                            {% endif %}
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+</div>
+
+
+{% endblock %}
+

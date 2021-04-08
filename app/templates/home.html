@@ -1,0 +1,33 @@
+{% extends "index.html" %}
+
+{% block content %}
+ <div class="jumbotron" style="background-image: url('/static/pics/gra.jpg'); background-size: cover; background-position: center;">
+    <div class="container">
+      <h1 style="font-weight: bold">Witaj w aplikacji Fitness Club</h1>
+      <p>Dzięki niej stworzysz bazy danych niezbędne do prowadzenia Twojego klubu. Wprowadź typy dostępnych abonamentów
+        a następnie zajęcia, które masz w ofercie. Dodaj pracowników łącząc ich z zajęciami, które prowadzą, oraz nowych
+        uczestników przypisując im typ abonamentu, osobistego trenera a także wybrane przez nich zajęcia.</p>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+ <div class="row" style="margin-left: 40px; margin-right: 40px">
+   {% for datum in data %}
+   <div class="col-lg-3 col-md-6 mb-4">
+     <div  class="card" style="width: 17rem;">
+       <img class="card-img-top" src="{{ datum[2] }}" style="height: 9rem;">
+       <div class="card-body">
+         <h4 class="card-title">{{ datum[0] }}</h4>
+         <p class="card-text">{{ datum[1] }}</p>
+       </div>
+       <div class="card-footer text-center">
+         <a href="{{ datum[3] }}" class="btn btn-primary">Przejdź do listy</a>
+       </div>
+     </div>
+   </div>
+   {% endfor %}
+
+ </div>
+
+{% endblock %}
+

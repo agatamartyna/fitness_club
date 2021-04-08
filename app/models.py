@@ -30,7 +30,7 @@ class User(db.Model):
     active = db.Column(db.Boolean, default=False)
     trainer_id = db.Column(db.Integer, db.ForeignKey('trainer.id'))
     subscription_id = db.Column(db.Integer, db.ForeignKey('subscription.id'))
-    courses = db.relationship("Course", secondary=association_table, lazy="subquery", backref=db.backref('course', lazy=True))
+    courses = db.relationship("Course", secondary=association_table, lazy="subquery")
     def __str__(self):
         return f"<User: {self.name}>"
 
@@ -40,7 +40,7 @@ class Trainer(db.Model):
     name = db.Column(db.String(50))
     personal = db.Column(db.Boolean, default=False)
     trainees = db.relationship("User", backref="trainee", lazy="dynamic")
-    classes = db.relationship("Course", secondary=association_table_2, lazy="subquery", backref=db.backref('class', lazy=True))
+    classes = db.relationship("Course", secondary=association_table_2, lazy="subquery")
 
     def __str__(self):
         return f"<Trainer: {self.name}>"
@@ -57,7 +57,10 @@ class Course(db.Model):
         return f"<Course: {self.name}>"
 
 
-
+"""
+    courses = db.relationship("Course", secondary=association_table, lazy="subquery", backref=db.backref('course', lazy=True))
+    classes = db.relationship("Course", secondary=association_table_2, lazy="subquery", backref=db.backref('clas', lazy=True))
+"""
 
 
 
