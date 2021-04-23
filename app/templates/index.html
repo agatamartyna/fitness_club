@@ -5,20 +5,35 @@
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
 
-  <title>Strona startowa</title>
+  <title>Fitness Club</title>
 
   <!-- Bootstrap core CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='bootstrap.min.css') }}">
-  <link rel="stylesheet" href="#">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/css/select2.min.css" rel="stylesheet" />
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/js/select2.min.js"></script>
   <style>
+
 .table tr {
   height: 4rem;
 }
+
+.jumbotron {
+    height: 250px;
+    margin-top: -30px;
+}
+
+.jumbotron h1 {
+    font-weight: bold;
+}
+
+. card {
+    padding: 40px 40px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
 .pagination {
   justify-content: center;
 }
@@ -36,7 +51,6 @@
 
 .pagination a:hover:not(.active) {background-color: #ddd;}
 
-
 </style>
 </head>
 
@@ -45,17 +59,13 @@
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
     <div class="container">
-      <a class="navbar-brand" href="#">Fitness Club</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarResponsive">
-        <ul class="navbar-nav ml-auto">
-          {% for nav in navs %}
-            <li class="nav-item">
-              {% if route == nav[1] %}
-            <a class="nav-link active" href="{{ nav[1] }}">{{ nav[0] }}
-              {% else %}
+      <a class="nav-link" href="/">Fitness Club</a>
+      <ul class="navbar-nav mr-auto" style="text-align: left">
+        {% for nav in navs %}
+        <li class="nav-item">
+          {% if route == nav[1] %}
+          <a class="nav-link active" href="{{ nav[1] }}">{{ nav[0] }}
+            {% else %}
             <a class="nav-link" href="{{ nav[1] }}">{{ nav[0] }}
               {% endif %}
               {% if nav[0] == "Strona główna" %}
@@ -65,7 +75,20 @@
           </li>
           {% endfor %}
         </ul>
-      </div>
+      <form class="form-inline my-2 my-lg-0" action="/" method="POST">
+        <p class="nav-item navbar-nav mr-auto">{{ search_form.name(class="form-control") }}</p>
+        <button class="btn btn-secondary btn-sm my-2 my-sm-0" type="submit" style="margin-right: 10px;">Szukaj</button>
+     </form>
+
+       {% if session.logged_in %}
+     <form class="form-inline my-2 my-lg-0" method="POST" action="{{ url_for('logout') }}">
+        <button class="btn btn-primary btn-sm my-2 my-sm-0" type="submit">Wyloguj</button>
+     </form>
+       {% else %}
+       <a href="{{ url_for('login') }}" class="btn btn-primary my-2 my-lg-0">Zaloguj</a>
+       {% endif %}
+   </div>
+
     </div>
   </nav>
 
@@ -75,7 +98,7 @@
   {% endblock %}
   <div class="container">
     <div class="footer" style="text-align: center; font-size: 10px; padding: 20px;">
-        <p>&copy;2021 All right reserved</p>
+        <p>Copyright &copy; Agata Chałupka <br> Wszelkie prawa zastrzeżone</p>
     </div>
   </div>
 
@@ -86,7 +109,13 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
   <script>
     $("[data-toggle=popover]").popover();
+    $(document).ready(function() {
+    $('#name').select2({  // init Select2 on search_form's name field
+        placeholder: "Szukaj",
+        allowClear: true,
+        selectOnClose: true,
+    });
+});
   </script>
 </body>
-
 </html>

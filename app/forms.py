@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField, SelectField, SelectMultipleField
+from wtforms import StringField, BooleanField, SelectField, SelectMultipleField, PasswordField
 from wtforms.validators import DataRequired
-from app.models import Trainer, Subscription, Course
-
+from app.models import Trainer, Subscription, Course, User
+from werkzeug.routing import ValidationError
+from config import Config
 
 class UserForm(FlaskForm):
     name = StringField("name", validators=[DataRequired()])
@@ -39,5 +40,31 @@ class TrainerForm(FlaskForm):
         super(TrainerForm, self).__init__(*args, **kwargs)
         self.classes.choices = [('', '')] + [(course.name, course.name) for course in Course.query.all()]
 
+
 class SubscriptionForm(FlaskForm):
     name = StringField("name", validators=[DataRequired()])
+
+
+class SearchForm(FlaskForm):
+    name = SelectField("name")
+
+    def __init__(self, *args, **kwargs):
+        super(SearchForm, self).__init__(*args, **kwargs)
+        self.name.choices = [('', '')] + sorted([(user.name, user.name) for user in User.query.all()] +\
+                            [(trainer.name, trainer.name) for trainer in Trainer.query.all()] +\
+                            [(course.name, course.name) for course in Course.query.all()] +\
+                            [(sub.name, sub.name) for sub in Subscription.query.all()])
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+
+    def validate_username(self, field):
+        if field.data != Config.ADMIN_USERNAME:
+            raise ValidationError("Invalid username")
+        return field.data
+
+    def validate_password(self, field):
+        if field.data != Config.ADMIN_PASSWORD:
+            raise ValidationError("Invalid password")
+        return field.data

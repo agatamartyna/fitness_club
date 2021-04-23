@@ -19,7 +19,7 @@ class Subscription(db.Model):
     users = db.relationship("User", backref="holder", lazy="dynamic")
 
     def __str__(self):
-        return f"<Subscrption: {self.name}>"
+        return "subscription"
 
 
 class User(db.Model):
@@ -30,9 +30,9 @@ class User(db.Model):
     active = db.Column(db.Boolean, default=False)
     trainer_id = db.Column(db.Integer, db.ForeignKey('trainer.id'))
     subscription_id = db.Column(db.Integer, db.ForeignKey('subscription.id'))
-    courses = db.relationship("Course", secondary=association_table, lazy="subquery")
+    courses = db.relationship("Course", secondary=association_table, back_populates="users", lazy="subquery")
     def __str__(self):
-        return f"<User: {self.name}>"
+        return "user"
 
 
 class Trainer(db.Model):
@@ -40,21 +40,21 @@ class Trainer(db.Model):
     name = db.Column(db.String(50))
     personal = db.Column(db.Boolean, default=False)
     trainees = db.relationship("User", backref="trainee", lazy="dynamic")
-    classes = db.relationship("Course", secondary=association_table_2, lazy="subquery")
+    classes = db.relationship("Course", secondary=association_table_2, back_populates="instructors", lazy="subquery")
 
     def __str__(self):
-        return f"<Trainer: {self.name}>"
+        return "trainer"
 
 
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-    instructors = db.relationship("Trainer", secondary=association_table_2, lazy="subquery")
-    users = db.relationship("User", secondary=association_table, lazy="subquery")
+    instructors = db.relationship("Trainer", secondary=association_table_2, back_populates="classes", lazy="subquery")
+    users = db.relationship("User", secondary=association_table, back_populates="courses", lazy="subquery")
 
     def __str__(self):
-        return f"<Course: {self.name}>"
+        return "course"
 
 
 """
