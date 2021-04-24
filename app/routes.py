@@ -125,9 +125,10 @@ def user_details(user_id):
             else:
                 trainee = None
             courses = []
-            for course in form.data["courses"]:
-                c = Course.query.filter_by(name=course)[0]
-                courses.append(c)
+            if form.data["courses"] != ['']:
+                for course in form.data["courses"]:
+                    c = Course.query.filter_by(name=course)[0]
+                    courses.append(c)
             u = User(name=name, active=active, holder=holder, trainee=trainee, courses=courses)
             db.session.add(u)
             db.session.commit()
