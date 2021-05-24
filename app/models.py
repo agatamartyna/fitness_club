@@ -2,14 +2,28 @@ from app import db
 from datetime import datetime
 
 association_table = db.Table('association_table', db.Model.metadata,
-                             db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                             db.Column('course_id', db.Integer, db.ForeignKey('course.id'))
-                             )
+                             db.Column(
+                                 'user_id',
+                                 db.Integer,
+                                 db.ForeignKey('user.id')
+                             ),
+                             db.Column(
+                                 'course_id',
+                                 db.Integer,
+                                 db.ForeignKey('course.id')
+                             ))
 
 association_table_2 = db.Table('association_table_2', db.Model.metadata,
-                               db.Column('trainer_id', db.Integer, db.ForeignKey('trainer.id')),
-                               db.Column('course_id', db.Integer, db.ForeignKey('course.id'))
-                               )
+                               db.Column(
+                                   'trainer_id',
+                                   db.Integer,
+                                   db.ForeignKey('trainer.id')
+                               ),
+                               db.Column(
+                                   'course_id',
+                                   db.Integer,
+                                   db.ForeignKey('course.id')
+                               ))
 
 
 class Subscription(db.Model):
@@ -30,7 +44,12 @@ class User(db.Model):
     active = db.Column(db.Boolean, default=False)
     trainer_id = db.Column(db.Integer, db.ForeignKey('trainer.id'))
     subscription_id = db.Column(db.Integer, db.ForeignKey('subscription.id'))
-    courses = db.relationship("Course", secondary=association_table, back_populates="users", lazy="subquery")
+    courses = db.relationship("Course",
+                              secondary=association_table,
+                              back_populates="users",
+                              lazy="subquery"
+                              )
+
     def __str__(self):
         return "user"
 
@@ -40,36 +59,26 @@ class Trainer(db.Model):
     name = db.Column(db.String(50))
     personal = db.Column(db.Boolean, default=False)
     trainees = db.relationship("User", backref="trainee", lazy="dynamic")
-    classes = db.relationship("Course", secondary=association_table_2, back_populates="instructors", lazy="subquery")
+    classes = db.relationship("Course",
+                              secondary=association_table_2,
+                              back_populates="instructors",
+                              lazy="subquery")
 
     def __str__(self):
         return "trainer"
 
 
-
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-    instructors = db.relationship("Trainer", secondary=association_table_2, back_populates="classes", lazy="subquery")
-    users = db.relationship("User", secondary=association_table, back_populates="courses", lazy="subquery")
+    instructors = db.relationship("Trainer",
+                                  secondary=association_table_2,
+                                  back_populates="classes",
+                                  lazy="subquery")
+    users = db.relationship("User",
+                            secondary=association_table,
+                            back_populates="courses",
+                            lazy="subquery")
 
     def __str__(self):
         return "course"
-
-
-"""
-    courses = db.relationship("Course", secondary=association_table, lazy="subquery", backref=db.backref('course', lazy=True))
-    classes = db.relationship("Course", secondary=association_table_2, lazy="subquery", backref=db.backref('clas', lazy=True))
-"""
-
-
-
-
-
-
-
-
-
-
-
-
